@@ -178,7 +178,8 @@ public class RelatorioService {
                 RelatorioEntity relatorio = relatorioRepository.findBymesReferencia(mesReferencia).orElseThrow(
                         ()-> new EntityNotFoundException()
                 );
-                RelatorioMensalDTO response = new RelatorioMensalDTO(LocalDateTime.now().getMonth().getValue(), relatorio.getValorVendidoDinheiroFront(), relatorio.getValorVendidoPixFront(), relatorio.getValorVendidoCreditoFront(), relatorio.getValorVendidoDebitoFront(), relatorio.getTotalVendasFront());
+                System.out.println(relatorio.getMesReferencia());
+                RelatorioMensalDTO response = new RelatorioMensalDTO(mesReferencia, relatorio.getValorVendidoDinheiroFront(), relatorio.getValorVendidoPixFront(), relatorio.getValorVendidoCreditoFront(), relatorio.getValorVendidoDebitoFront(), relatorio.getTotalVendasFront());
                 return  new ResponseEntity<>(response, HttpStatus.OK);
             }
             else
@@ -297,6 +298,12 @@ public class RelatorioService {
                 }
                 else
                 {
+                    int mesAnterior = pagamento.getDataPagamento().getMonth().minus(1).getValue();
+                    System.out.println("mes anterior: "+mesAnterior);
+                    RelatorioEntity relatorioAnterior = relatorioRepository.findBymesReferencia(mesAnterior).get();
+                    relatorioAnterior.setDataFechamento(LocalDateTime.now());
+                    relatorioAnterior.setTimeStamp(LocalDateTime.now());
+                    relatorioRepository.save(relatorioAnterior);
                     RelatorioEntity relatorioEntity = new RelatorioEntity();
                     relatorioEntity.setDataAbertura(LocalDateTime.now());
                     relatorioEntity.setValorVendidoDinheiro(0.0);
@@ -334,6 +341,7 @@ public class RelatorioService {
                     relatorioEntity.setValorVendidoCreditoFront(NumberFormat.getCurrencyInstance(localBrasil).format(relatorioEntity.getValorVendidoCredito()));
                     relatorioEntity.setValorVendidoDinheiroFront(NumberFormat.getCurrencyInstance(localBrasil).format(relatorioEntity.getValorVendidoDinheiro()));
                     relatorioEntity.setTotalVendasFront(NumberFormat.getCurrencyInstance(localBrasil).format(relatorioEntity.getTotalVendas()));
+                    relatorioEntity.setPagamentos((List<PagamentoEntity>) pagamento);
                     pagamentoRepository.save(pagamento);
                     relatorioRepository.save(relatorioEntity);
                     pagamentoRepository.save(pagamento);
