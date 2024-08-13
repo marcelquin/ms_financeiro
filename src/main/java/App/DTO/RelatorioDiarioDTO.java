@@ -1,11 +1,23 @@
 package App.DTO;
 
+import java.util.List;
+
 public record RelatorioDiarioDTO(
-        int diaReferencia,
-        String valorVendidoDinheiro,
-        String valorVendidoPix,
-        String valorVendidoCredito,
-        String valorVendidoDebito,
-        String valorTotalVenda
-) {
+        int dia,
+
+        String totalVendasDebito,
+
+        String totalVendasCredito,
+
+        String totalVendasDinheiro,
+
+        String totalVendasPix,
+
+        String totalVendas,
+
+        String totalDebitos
+
+        ) {
+
+
 }

@@ -1,12 +1,10 @@
 package App.Controller;
 
 import App.DTO.RelatorioAnualDTO;
-import App.DTO.RelatorioDTO;
-import App.DTO.RelatorioDiarioDTO;
 import App.DTO.RelatorioMensalDTO;
-import App.Entity.RelatorioEntity;
+import App.Entity.RelatorioMensalEntity;
 import App.Enum.FORMAPAGAMENTO;
-import App.Service.RelatorioService;
+import App.Service.RelatorioMensalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -23,11 +21,52 @@ import java.util.List;
 )
 public class RelatorioController {
 
-    private final RelatorioService service;
+    private final RelatorioMensalService service;
 
-    public RelatorioController(RelatorioService service) {
+    public RelatorioController(RelatorioMensalService service) {
         this.service = service;
     }
+
+
+    @Operation(summary = "Lista Registros da tabela", method = "POST")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
+            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
+            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
+            @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
+    })
+    @PostMapping("/NovoLancamentoDebito")
+    public void NovoLancamentoDebito(@RequestParam Double valorBoleto,
+                                     Double parcelas,
+                                     @RequestParam int diaVencimento,
+                                     Double carenciaPagamento)
+    { service.NovoLancamentoDebito(valorBoleto, parcelas, diaVencimento, carenciaPagamento);}
+
+    @Operation(summary = "Lista Registros da tabela", method = "POST")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
+            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
+            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
+            @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
+    })
+    @PostMapping("/NovoLancamentoVendas")
+    public ResponseEntity<RelatorioMensalEntity> NovoLancamentoVendas(@RequestParam Double valorVenda,
+                                                                      @RequestParam FORMAPAGAMENTO formapagamento)
+    { return service.NovoLancamentoVendas(valorVenda, formapagamento);}
+
+    @Operation(summary = "Lista Registros da tabela", method = "PUT")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
+            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
+            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
+            @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
+    })
+    @PutMapping("/NovoPagamento")
+    public void NovoPagamento(@RequestParam Long idBoleto,
+                              @RequestParam FORMAPAGAMENTO formapagamento,
+                              Double parcelas)
+    { service.NovoPagamento(idBoleto, formapagamento, parcelas);}
+
 
     @Operation(summary = "Lista Registros da tabela", method = "GET")
     @ApiResponses(value = {
@@ -37,31 +76,8 @@ public class RelatorioController {
             @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
     })
     @GetMapping("/ListarRelatorio")
-    public ResponseEntity<List<RelatorioEntity>> ListarRelatorio()
-    {return service.ListarRelatorio();}
-
-
-    @Operation(summary = "Busca Registros da tabela", method = "GET")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
-            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
-            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
-            @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
-    })
-    @GetMapping("/BuscarRelatorioPorDia")
-    public ResponseEntity<RelatorioDiarioDTO> BuscarRelatorioPorDia()
-    {return service.BuscarRelatorioPorDia();}
-
-    @Operation(summary = "Busca Registros da tabela", method = "GET")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
-            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
-            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
-            @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
-    })
-    @GetMapping("/BuscarRelatorioPordiaReferencia")
-    public ResponseEntity<RelatorioDiarioDTO> BuscarRelatorioPordiaReferencia(int diaReferencia)
-    { return service.BuscarRelatorioPordiaReferencia(diaReferencia); }
+    public ResponseEntity<List<RelatorioMensalEntity>> ListarRelatorio()
+    {return service.ListarRelatorios();}
 
     @Operation(summary = "Busca Registros da tabela", method = "GET")
     @ApiResponses(value = {
@@ -71,9 +87,44 @@ public class RelatorioController {
             @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
     })
     @GetMapping("/BuscarRelatorioPorMes")
-    public ResponseEntity<RelatorioMensalDTO> BuscarRelatorioPorMes()
-    {return service.BuscarRelatorioPorMes();}
+    public ResponseEntity<RelatorioMensalDTO> BuscarRelatorioMensal()
+    {return service.BuscarRelatorioMensal();}
 
+    @Operation(summary = "Busca Registros da tabela", method = "GET")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
+            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
+            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
+            @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
+    })
+    @GetMapping("/BuscarRelatorioMensalComParametros")
+    public ResponseEntity<RelatorioMensalDTO> BuscarRelatorioMensalComParametros(@RequestParam int mesReferencia,
+                                                                                       @RequestParam int anoReferencia)
+    { return service.BuscarRelatorioMensalComParametros(mesReferencia, anoReferencia);}
+
+    @Operation(summary = "Busca Registros da tabela", method = "GET")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
+            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
+            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
+            @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
+    })
+    @GetMapping("/BuscarRelatorioPorAno")
+    public ResponseEntity<RelatorioAnualDTO> BuscarRelatorioPorAno()
+    {return service.BuscarRelatorioAnual();}
+
+    @Operation(summary = "Busca Registros da tabela", method = "GET")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
+            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
+            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
+            @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
+    })
+    @GetMapping("/BuscarRelatorioAnualComParametros")
+    public ResponseEntity<RelatorioAnualDTO> BuscarRelatorioAnualComParametros(@RequestParam int anoReferencia)
+    { return service.BuscarRelatorioAnualComParametros(anoReferencia);}
+
+    /*
     @Operation(summary = "Busca Registros da tabela", method = "GET")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Operação realizada com sucesso"),
@@ -119,4 +170,6 @@ public class RelatorioController {
                                                           Double parcelas,
                                                           @RequestParam Double valor)
     { return service.NovoLancamento(formaPagamento, parcelas, valor);}
+    */
 }
+

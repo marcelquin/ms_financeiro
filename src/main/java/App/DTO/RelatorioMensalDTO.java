@@ -1,12 +1,22 @@
 package App.DTO;
 
-public record RelatorioMensalDTO(
-        int mesReferencia,
-        String valorVendidoDinheiro,
-        String valorVendidoPix,
-        String valorVendidoCredito,
-        String valorVendidoDebito,
-        String valorTotalVenda
+import java.util.List;
 
-) {
+public record RelatorioMensalDTO(
+        String dataReferencia,
+
+        String totalVendasDebito,
+
+        String totalVendasCredito,
+
+        String totalVendasDinheiro,
+
+        String totalVendasPix,
+
+        String totalVendas,
+
+        String totalDebitos
+        ) {
+
+
 }
