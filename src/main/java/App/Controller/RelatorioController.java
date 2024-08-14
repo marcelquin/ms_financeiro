@@ -4,6 +4,7 @@ import App.DTO.RelatorioAnualDTO;
 import App.DTO.RelatorioMensalDTO;
 import App.Entity.RelatorioMensalEntity;
 import App.Enum.FORMAPAGAMENTO;
+import App.Enum.StatusPagamento;
 import App.Service.RelatorioMensalService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -50,9 +52,16 @@ public class RelatorioController {
             @ApiResponse(responseCode = "500", description = "Ops algoo deu errado"),
     })
     @PostMapping("/NovoLancamentoVendas")
-    public ResponseEntity<RelatorioMensalEntity> NovoLancamentoVendas(@RequestParam Double valorVenda,
+    public ResponseEntity<RelatorioMensalEntity> NovoLancamentoVendas(@RequestParam String nomeCLiente,
+                                                                      @RequestParam String documento,
+                                                                      @RequestParam String codigo,
+                                                                      @RequestParam List<String> itens,
+                                                                      @RequestParam StatusPagamento statusPagamento,
+                                                                      @RequestParam LocalDateTime dataVenda,
+                                                                      @RequestParam Double valorVenda,
+                                                                      Double parcelas,
                                                                       @RequestParam FORMAPAGAMENTO formapagamento)
-    { return service.NovoLancamentoVendas(valorVenda, formapagamento);}
+    { return service.NovoLancamentoVendas(nomeCLiente, documento, codigo, itens, statusPagamento,dataVenda, valorVenda, parcelas, formapagamento);}
 
     @Operation(summary = "Lista Registros da tabela", method = "PUT")
     @ApiResponses(value = {

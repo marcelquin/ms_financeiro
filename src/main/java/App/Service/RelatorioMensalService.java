@@ -26,14 +26,16 @@ import java.util.Locale;
 public class RelatorioMensalService {
 
     private final VendasRepository vendasRepository;
+    private final VendasRealizadaRepository vendasRealizadaRepository;
     private final DebitosRepository debitosRepository;
     private final RelatorioMensalRepository relatorioMensalRepository;
     private final BoletoRepository boletoRepository;
     private final PagamentoRepository pagamentoRepository;
     Locale localBrasil = new Locale("pt", "BR");
 
-    public RelatorioMensalService(VendasRepository vendasRepository, DebitosRepository debitosRepository, RelatorioMensalRepository relatorioMensalRepository, BoletoRepository boletoRepository, PagamentoRepository pagamentoRepository) {
+    public RelatorioMensalService(VendasRepository vendasRepository, VendasRealizadaRepository vendasRealizadaRepository, DebitosRepository debitosRepository, RelatorioMensalRepository relatorioMensalRepository, BoletoRepository boletoRepository, PagamentoRepository pagamentoRepository) {
         this.vendasRepository = vendasRepository;
+        this.vendasRealizadaRepository = vendasRealizadaRepository;
         this.debitosRepository = debitosRepository;
         this.relatorioMensalRepository = relatorioMensalRepository;
         this.boletoRepository = boletoRepository;
@@ -63,13 +65,28 @@ public class RelatorioMensalService {
         );
         List<RelatorioMensalDTO> response = new ArrayList<>();
         List<PedidosDTO> pedidosDTOS = new ArrayList<>();
+        for(VendasRealizdasEntity vendasRealizdas : relatorioMensal.getVendas().getVendasRealizdas())
+        {
+            PedidosDTO dto = new PedidosDTO(vendasRealizdas.getNomeCLiente(),
+                                            vendasRealizdas.getDocumento(),
+                                            vendasRealizdas.getCodigo(),
+                                            vendasRealizdas.getItens(),
+                                            vendasRealizdas.getPagamento().getParcelas(),
+                                            vendasRealizdas.getPagamento().getValor(),
+                                            vendasRealizdas.getStatusPagamento(),
+                                            vendasRealizdas.getDataPedido(),
+                                            vendasRealizdas.getPagamento().getDataPagamento(),
+                                            vendasRealizdas.getPagamento().getFormaPagamento());
+            pedidosDTOS.add(dto);
+        }
         RelatorioMensalDTO dto = new RelatorioMensalDTO(relatorioMensal.getDataReferencia(),
                                                         relatorioMensal.getTotalVendasDebito(),
                                                         relatorioMensal.getTotalVendasCredito(),
                                                         relatorioMensal.getTotalVendasDinheiro(),
                                                         relatorioMensal.getTotalVendasPix(),
                                                         relatorioMensal.getTotalVendas(),
-                                                        relatorioMensal.getTotalDebitos());
+                                                        relatorioMensal.getTotalDebitos(),
+                                                        pedidosDTOS);
             return new ResponseEntity<>(dto, HttpStatus.OK);
         }
         catch (Exception e)
@@ -90,13 +107,28 @@ public class RelatorioMensalService {
                         ()-> new EntityNotFoundException()
                 );
                 List<PedidosDTO> pedidosDTOS = new ArrayList<>();
+                for(VendasRealizdasEntity vendasRealizdas : relatorioMensal.getVendas().getVendasRealizdas())
+                {
+                    PedidosDTO dto = new PedidosDTO(vendasRealizdas.getNomeCLiente(),
+                                                    vendasRealizdas.getDocumento(),
+                                                    vendasRealizdas.getCodigo(),
+                                                    vendasRealizdas.getItens(),
+                                                    vendasRealizdas.getPagamento().getParcelas(),
+                                                    vendasRealizdas.getPagamento().getValor(),
+                                                    vendasRealizdas.getStatusPagamento(),
+                                                    vendasRealizdas.getDataPedido(),
+                                                    vendasRealizdas.getPagamento().getDataPagamento(),
+                                                    vendasRealizdas.getPagamento().getFormaPagamento());
+                    pedidosDTOS.add(dto);
+                }
                 RelatorioMensalDTO dto = new RelatorioMensalDTO(relatorioMensal.getDataReferencia(),
                                                                 relatorioMensal.getTotalVendasDebito(),
                                                                 relatorioMensal.getTotalVendasCredito(),
                                                                 relatorioMensal.getTotalVendasDinheiro(),
                                                                 relatorioMensal.getTotalVendasPix(),
                                                                 relatorioMensal.getTotalVendas(),
-                                                                relatorioMensal.getTotalDebitos());
+                                                                relatorioMensal.getTotalDebitos(),
+                                                                pedidosDTOS);
                 return new ResponseEntity<>(dto, HttpStatus.OK);
             }
         }
@@ -129,6 +161,20 @@ public class RelatorioMensalService {
                     valorVendaPix += relatorioMensal.getVendas().getTotalVendasPix();
                     totalDebitos += relatorioMensal.getDebitos().getValorTotalBoletos();
                 }
+                for(VendasRealizdasEntity vendasRealizdas : relatorioMensal.getVendas().getVendasRealizdas())
+                {
+                    PedidosDTO dto = new PedidosDTO(vendasRealizdas.getNomeCLiente(),
+                                                    vendasRealizdas.getDocumento(),
+                                                    vendasRealizdas.getCodigo(),
+                                                    vendasRealizdas.getItens(),
+                                                    vendasRealizdas.getPagamento().getParcelas(),
+                                                    vendasRealizdas.getPagamento().getValor(),
+                                                    vendasRealizdas.getStatusPagamento(),
+                                                    vendasRealizdas.getDataPedido(),
+                                                    vendasRealizdas.getPagamento().getDataPagamento(),
+                                                    vendasRealizdas.getPagamento().getFormaPagamento());
+                    pedidosDTOS.add(dto);
+                }
             }
             Double valorTotalVenda = valorVendaDebito + valorVendaCredito + valorVendaDinheiro + valorVendaPix;
             RelatorioAnualDTO dto = new RelatorioAnualDTO(LocalDate.now().getYear(),
@@ -137,7 +183,8 @@ public class RelatorioMensalService {
                                                           NumberFormat.getCurrencyInstance(localBrasil).format(valorVendaDinheiro),
                                                           NumberFormat.getCurrencyInstance(localBrasil).format(valorVendaPix),
                                                           NumberFormat.getCurrencyInstance(localBrasil).format(valorTotalVenda),
-                                                          NumberFormat.getCurrencyInstance(localBrasil).format(totalDebitos)
+                                                          NumberFormat.getCurrencyInstance(localBrasil).format(totalDebitos),
+                                                          pedidosDTOS
                                                           );
             return  new ResponseEntity<>(dto,HttpStatus.OK);
         }
@@ -172,6 +219,20 @@ public class RelatorioMensalService {
                         valorVendaPix += relatorioMensal.getVendas().getTotalVendasPix();
                         totalDebitos += relatorioMensal.getDebitos().getValorTotalBoletos();
                     }
+                    for(VendasRealizdasEntity vendasRealizdas : relatorioMensal.getVendas().getVendasRealizdas())
+                    {
+                        PedidosDTO dto = new PedidosDTO(vendasRealizdas.getNomeCLiente(),
+                                vendasRealizdas.getDocumento(),
+                                vendasRealizdas.getCodigo(),
+                                vendasRealizdas.getItens(),
+                                vendasRealizdas.getPagamento().getParcelas(),
+                                vendasRealizdas.getPagamento().getValor(),
+                                vendasRealizdas.getStatusPagamento(),
+                                vendasRealizdas.getDataPedido(),
+                                vendasRealizdas.getPagamento().getDataPagamento(),
+                                vendasRealizdas.getPagamento().getFormaPagamento());
+                        pedidosDTOS.add(dto);
+                    }
                 }
                 Double valorTotalVenda = valorVendaDebito + valorVendaCredito + valorVendaDinheiro + valorVendaPix;
                 RelatorioAnualDTO dto = new RelatorioAnualDTO(anoReferencia,
@@ -180,8 +241,8 @@ public class RelatorioMensalService {
                                                               NumberFormat.getCurrencyInstance(localBrasil).format(valorVendaDinheiro),
                                                               NumberFormat.getCurrencyInstance(localBrasil).format(valorVendaPix),
                                                               NumberFormat.getCurrencyInstance(localBrasil).format(valorTotalVenda),
-                                                              NumberFormat.getCurrencyInstance(localBrasil).format(totalDebitos)
-                );
+                                                              NumberFormat.getCurrencyInstance(localBrasil).format(totalDebitos),
+                                                              pedidosDTOS);
                 return  new ResponseEntity<>(dto,HttpStatus.OK);
             }
         }
@@ -192,7 +253,14 @@ public class RelatorioMensalService {
         return null;
     }
 
-    public ResponseEntity<RelatorioMensalEntity> NovoLancamentoVendas(Double valorVenda,
+    public ResponseEntity<RelatorioMensalEntity> NovoLancamentoVendas(String nomeCLiente,
+                                                                      String documento,
+                                                                      String codigo,
+                                                                      List<String> itens,
+                                                                      StatusPagamento statusPagamento,
+                                                                      LocalDateTime dataVenda,
+                                                                      Double valorVenda,
+                                                                      Double parcelas,
                                                                       FORMAPAGAMENTO formapagamento)
     {
         try
@@ -203,91 +271,59 @@ public class RelatorioMensalService {
             if(!relatorioMensalRepository.existsBydataReferencia(LocalDate.now().getMonth().getValue()+"/"+LocalDate.now().getYear()))
             {
                 GeraRelatorio(LocalDate.now().getMonth().getValue(),LocalDate.now().getYear());
-                   /* RelatorioMensalEntity relatorioMensal = new RelatorioMensalEntity();
-                    relatorioMensal.setTimeStamp(LocalDateTime.now());
-                    VendasEntity vendas = new VendasEntity();
-                    vendas.setTimeStamp(LocalDateTime.now());
-                    vendas.setTotalVendasDinheiro(0.0);
-                    vendas.setTotalVendasCredito(0.0);
-                    vendas.setTotalVendasDebito(0.0);
-                    vendas.setTotalVendasPix(0.0);
-                    vendas.setTotalVendas(0.0);
-                    if(formapagamento == FORMAPAGAMENTO.CREDITO)
-                    {
-                        vendas.setTotalVendasCredito(vendas.getTotalVendasCredito()+ valorVenda);
-                        relatorioMensal.setTotalVendasCredito(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasCredito()));
-                    }
-                    if(formapagamento == FORMAPAGAMENTO.DEBITO)
-                    {
-                        vendas.setTotalVendasDebito(vendas.getTotalVendasDebito()+ valorVenda);
-                        relatorioMensal.setTotalVendasDebito(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasDebito()));
-                    }
-                    if(formapagamento == FORMAPAGAMENTO.DINHEIRO)
-                    {
-                        vendas.setTotalVendasDinheiro(vendas.getTotalVendasDinheiro()+ valorVenda);
-                        relatorioMensal.setTotalVendasDinheiro(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasDinheiro()));
-                    }
-                    if(formapagamento == FORMAPAGAMENTO.PIX)
-                    {
-                        vendas.setTotalVendasPix(vendas.getTotalVendasPix()+ valorVenda);
-                        relatorioMensal.setTotalVendasPix(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasPix()));
-                    }
-                    vendas.setTotalVendas(vendas.getTotalVendasCredito() +
-                                          vendas.getTotalVendasDebito() +
-                                          vendas.getTotalVendasDinheiro() +
-                                          vendas.getTotalVendasPix());
-                    DebitosEntity debitos = new DebitosEntity();
-                    debitos.setTimeStamp(LocalDateTime.now());
-                    debitos.setValorTotalBoletos(0.0);
-                    vendasRepository.save(vendas);
-                    debitosRepository.save(debitos);
-                    relatorioMensal.setVendas(vendas);
-                    relatorioMensal.setDebitos(debitos);
-                    relatorioMensal.setTotalVendasDinheiro(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasDinheiro()));
-                    relatorioMensal.setTotalVendasCredito(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasCredito()));
-                    relatorioMensal.setTotalVendasDebito(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasDebito()));
-                    relatorioMensal.setTotalVendasPix(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasPix()));
-                    relatorioMensal.setTotalVendas(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendas()));
-                    relatorioMensal.setTotalDebitos(NumberFormat.getCurrencyInstance(localBrasil).format(debitos.getValorTotalBoletos()));
-                    relatorioMensalRepository.save(relatorioMensal);
-                    return  new ResponseEntity<>(relatorioMensal,HttpStatus.CREATED);*/
-                }
-                RelatorioMensalEntity relatorioMensal = relatorioMensalRepository.findBydataReferencia(LocalDate.now().getMonth().getValue()+"/"+LocalDate.now().getYear()).orElseThrow(
+            }
+            RelatorioMensalEntity relatorioMensal = relatorioMensalRepository.findBydataReferencia(LocalDate.now().getMonth().getValue()+"/"+LocalDate.now().getYear()).orElseThrow(
                         ()->new EntityNotFoundException()
                 );
-                VendasEntity vendas = vendasRepository.findById(relatorioMensal.getVendas().getId()).orElseThrow(
+            VendasEntity vendas = vendasRepository.findById(relatorioMensal.getVendas().getId()).orElseThrow(
                         ()->new EntityNotFoundException()
                 );
-                if(formapagamento == FORMAPAGAMENTO.CREDITO)
-                {
-                    vendas.setTotalVendasCredito(vendas.getTotalVendasCredito()+ valorVenda);
-                    relatorioMensal.setTotalVendasCredito(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasCredito()));
-                }
-                if(formapagamento == FORMAPAGAMENTO.DEBITO)
-                {
-                    vendas.setTotalVendasDebito(vendas.getTotalVendasDebito()+ valorVenda);
-                    relatorioMensal.setTotalVendasDebito(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasDebito()));
-                }
-                if(formapagamento == FORMAPAGAMENTO.DINHEIRO)
-                {
-                    vendas.setTotalVendasDinheiro(vendas.getTotalVendasDinheiro()+ valorVenda);
-                    relatorioMensal.setTotalVendasDinheiro(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasDinheiro()));
-                }
-                if(formapagamento == FORMAPAGAMENTO.PIX)
-                {
-                    vendas.setTotalVendasPix(vendas.getTotalVendasPix()+ valorVenda);
-                    relatorioMensal.setTotalVendasPix(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasPix()));
-                }
-                vendas.setTotalVendas(vendas.getTotalVendasCredito() +
-                        vendas.getTotalVendasDebito() +
-                        vendas.getTotalVendasDinheiro() +
-                        vendas.getTotalVendasPix());
-                relatorioMensal.setTotalVendas(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendas()));
-                relatorioMensal.setTimeStamp(LocalDateTime.now());
-                vendas.setTimeStamp(LocalDateTime.now());
-                vendasRepository.save(vendas);
-                relatorioMensalRepository.save(relatorioMensal);
-                return new ResponseEntity<>(relatorioMensal,HttpStatus.OK);
+            GeraVendaRealizda(nomeCLiente, documento, codigo, itens, valorVenda, statusPagamento, dataVenda);
+            VendasRealizdasEntity vendasRealizdas = vendasRealizadaRepository.findBycodigo(codigo).orElseThrow(
+                    ()->new EntityNotFoundException()
+            );
+            PagamentoEntity pagamento = new PagamentoEntity();
+            pagamento.setDataPagamento(LocalDateTime.now());
+            pagamento.setValor(valorVenda);
+            pagamento.setParcelas(parcelas);
+            pagamento.setValorParcela(valorVenda/parcelas);
+            pagamento.setFormaPagamento(formapagamento);
+            pagamento.setTimeStamp(LocalDateTime.now());
+            pagamentoRepository.save(pagamento);
+            vendasRealizdas.setPagamento(pagamento);
+            vendasRealizdas.setTimeStamp(LocalDateTime.now());
+            vendasRealizadaRepository.save(vendasRealizdas);
+            if(formapagamento == FORMAPAGAMENTO.CREDITO)
+            {
+                vendas.setTotalVendasCredito(vendas.getTotalVendasCredito()+ valorVenda);
+                relatorioMensal.setTotalVendasCredito(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasCredito()));
+            }
+            if(formapagamento == FORMAPAGAMENTO.DEBITO)
+            {
+                vendas.setTotalVendasDebito(vendas.getTotalVendasDebito()+ valorVenda);
+                relatorioMensal.setTotalVendasDebito(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasDebito()));
+            }
+            if(formapagamento == FORMAPAGAMENTO.DINHEIRO)
+            {
+                vendas.setTotalVendasDinheiro(vendas.getTotalVendasDinheiro()+ valorVenda);
+                relatorioMensal.setTotalVendasDinheiro(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasDinheiro()));
+            }
+            if(formapagamento == FORMAPAGAMENTO.PIX)
+            {
+                vendas.setTotalVendasPix(vendas.getTotalVendasPix()+ valorVenda);
+                relatorioMensal.setTotalVendasPix(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendasPix()));
+            }
+            vendas.setTotalVendas(vendas.getTotalVendasCredito() +
+                                  vendas.getTotalVendasDebito() +
+                                  vendas.getTotalVendasDinheiro() +
+                                  vendas.getTotalVendasPix());
+            relatorioMensal.setTotalVendas(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendas()));
+            relatorioMensal.setTimeStamp(LocalDateTime.now());
+            vendas.setTimeStamp(LocalDateTime.now());
+            vendas.getVendasRealizdas().add(vendasRealizdas);
+            vendasRepository.save(vendas);
+            relatorioMensalRepository.save(relatorioMensal);
+            return new ResponseEntity<>(relatorioMensal,HttpStatus.OK);
             }
             else
             {throw new NullargumentsException(); }
@@ -361,6 +397,45 @@ public class RelatorioMensalService {
             relatorioMensal.setTotalVendas(NumberFormat.getCurrencyInstance(localBrasil).format(vendas.getTotalVendas()));
             relatorioMensal.setTotalDebitos(NumberFormat.getCurrencyInstance(localBrasil).format(debitos.getValorTotalBoletos()));
             relatorioMensalRepository.save(relatorioMensal);
+        }
+        catch (Exception e)
+        {
+            e.getMessage();
+        }
+    }
+
+    public void GeraVendaRealizda(String nomeCLiente,
+                                  String documento,
+                                  String codigo,
+                                  List<String> itens,
+                                  Double valor,
+                                  StatusPagamento statusPagamento,
+                                  LocalDateTime dataVenda
+                                  )
+    {
+        try
+        {
+            if(nomeCLiente != null &&
+            documento != null &&
+            codigo != null &&
+            itens != null &&
+            valor != null &&
+            statusPagamento != null &&
+            dataVenda != null)
+            {
+                VendasRealizdasEntity vendasRealizdasEntity = new VendasRealizdasEntity();
+                vendasRealizdasEntity.setTimeStamp(LocalDateTime.now());
+                vendasRealizdasEntity.setItens(itens);
+                vendasRealizdasEntity.setValorTotal(valor);
+                vendasRealizdasEntity.setCodigo(codigo);
+                vendasRealizdasEntity.setDataPedido(dataVenda);
+                vendasRealizdasEntity.setNomeCLiente(nomeCLiente);
+                vendasRealizdasEntity.setDocumento(documento);
+                vendasRealizdasEntity.setStatusPagamento(statusPagamento);
+                vendasRealizadaRepository.save(vendasRealizdasEntity);
+            }
+            else
+            {throw new NullargumentsException();}
         }
         catch (Exception e)
         {

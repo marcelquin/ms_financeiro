@@ -32,6 +32,9 @@ public class VendasEntity {
 
     private Double totalVendas;
 
+    @OneToMany
+    private List<VendasRealizdasEntity> vendasRealizdas;
+
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime timeStamp;
 }

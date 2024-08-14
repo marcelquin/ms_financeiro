@@ -1,6 +1,6 @@
 package App.Entity;
 
-import App.Enum.FORMAPAGAMENTO;
+import App.Enum.StatusPagamento;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,30 +9,38 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Entity
-@Table(name = "pagamento")
 @Builder
-public class PagamentoEntity {
+@Table(name = "VendasRealizadas")
+public class VendasRealizdasEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    private FORMAPAGAMENTO formaPagamento;
+    private String nomeCLiente;
 
-    private Double parcelas;
+    private String documento;
 
-    private Double valor;
+    private String codigo;
 
-    private Double valorParcela;
+    private List<String> itens;
+
+    private Double valorTotal;
+
+    private StatusPagamento statusPagamento;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
-    private LocalDateTime dataPagamento;
+    private LocalDateTime dataPedido;
+
+    @OneToOne
+    @JoinColumn(name = "pagamentoEntity_id", referencedColumnName = "id")
+    private PagamentoEntity pagamento;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime timeStamp;

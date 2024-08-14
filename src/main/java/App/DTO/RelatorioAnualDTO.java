@@ -15,7 +15,8 @@ public record RelatorioAnualDTO(
 
         String totalVendas,
 
-        String totalDebitos
+        String totalDebitos,
+        List<PedidosDTO> vendasRealizadas
 
         ) {
 
