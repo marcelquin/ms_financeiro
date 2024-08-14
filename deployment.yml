@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysqlfinanceiro
+spec:
+  selector:
+    matchLabels:
+      app: mysqlfinanceiro
+  template:
+    metadata:
+      labels:
+        app: mysqlfinanceiro
+    spec:
+      containers:
+        - name: mysqlfinanceiro
+          image: mysql:8.0.39
+          ports:
+          - containerPort: 3306
+          env:
+          - name: MYSQL_DATABASE
+            value: "db_msfinanceiro"
+          - name: MYSQL_USER
+            value: "mhqa"
+          - name: MYSQL_PASSWORD
+            value: "mh8q23pr99"  
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysqlfinanceiro-svc
+spec:
+  selector: 
+    app: mysqlfinanceiro
+  ports:
+    - port: 3306
+  type: ClusterIP
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backendfinanceiro
+spec:
+  selector:
+    matchLabels:
+      app: backendfinanceiro
+  template:
+    metadata:
+      labels:
+        app: backendfinanceiro
+    spec:
+      containers:
+        - name: backendfinanceiro
+          image: mquinteiro464/ms_financeiro:latest
+          ports:
+          - containerPort: 8080
+          env:
+          - name: SPRING_DATASOURCE_URL
+            value: "jdbc:mysql://localhost:3306/db_msfinanceiro"
+          - name: SPRING_DATASOURCE_USERNAME
+            value: "mhqa"
+          - name: SPRING_DATASOURCE_PASSWORD
+            value: "mh8q23pr99"  
+          - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+            value: "update"
+          - name: SPRING_DATASOURCE_DATABASE
+            value: "db_msfinanceiro"  
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-svc
+spec:
+  selector: 
+    app: backendfinanceiro
+  ports:
+    - port: 8082
+      targetPort: 8082
+  type: LoadBalancer

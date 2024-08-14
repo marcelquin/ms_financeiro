@@ -1,0 +1,28 @@
+version: "3"
+services:
+
+  ms_financeiro:
+    build: /ms_financeiro
+    ports:
+      - 8082:8082
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db_financeiro:3306/db_msfinanceiro?createDatabaseIfNotExist=true
+      - SPRING_DATASOURCE_USERNAME=mhqa
+      - SPRING_DATASOURCE_PASSWORD=mh8q23pr99
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      #- api.security.token.secret=${JWT_SECRET:28764JY723ffZ}
+    depends_on:
+      - db_financeiro
+    restart: on-failure
+
+  db_financeiro:
+    image: 'mysql:8.0'
+    environment:
+      - 'MYSQL_DATABASE=db_msfinanceiro'
+      - 'MYSQL_PASSWORD=mh8q23pr99'
+      - 'MYSQL_ROOT_PASSWORD=mh8q23pr99'
+      - 'MYSQL_USER=mhqa'
+    ports:
+      - 3306:3306
+    volumes:
+      - /app/database/db_financeiro
